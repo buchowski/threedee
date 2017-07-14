@@ -7,13 +7,16 @@
 
 	"globals": {
 		"window": true,
-		"document": true
+		"document": true,
+		"THREE": true,
+		"requestAnimationFrame": true
 	},
 
 	"rules": {
 		"no-param-reassign": ["error", { "props": false }],
 		"new-cap": 0,
 		"indent": ["error", 4],
-		"padded-blocks": 0
+		"padded-blocks": 0,
+		"prefer-const": 0
 	}
 }
