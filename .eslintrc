@@ -1,0 +1,19 @@
+{
+	"extends": "airbnb",
+
+	"envs": [
+		"browser"
+	],
+
+	"globals": {
+		"window": true,
+		"document": true
+	},
+
+	"rules": {
+		"no-param-reassign": ["error", { "props": false }],
+		"new-cap": 0,
+		"indent": ["error", 4],
+		"padded-blocks": 0
+	}
+}
