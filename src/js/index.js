@@ -9,9 +9,11 @@ let renderer = new THREE.WebGLRenderer();
 let geometry = new THREE.OctahedronGeometry(unit)
 let materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
 let materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })
+let lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+let genesisDoc = docs[Object.keys(docs).length]
+let genesisMesh = new THREE.Mesh(geometry, materialTwo);
 let docIds = Object.keys(docs)
 let lights = [];
-let treeData = {}
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -30,33 +32,41 @@ scene.add(lights[0]);
 scene.add(lights[1]);
 scene.add(lights[2]);
 
-docIds.forEach((id, index) => {
-    let doubleUnit = unit * 2
-    let doc = docs[id]
-    let parentId = Number(doc.parentId)
-    let material = materialOne
-    let isGenesisDoc = !doc.parentId
-    let mesh
+function drawDat(doc, parentDoc) {
+    let spaceUnit = unit * 5
 
-    if (isGenesisDoc) {
-        material = materialTwo
-        parentId = docIds.length + 1
+    if (parentDoc) {
+        let { x, y, z } = parentDoc.mesh.position
+        let mesh = new THREE.Mesh(geometry, materialOne);
+        let numberChild = parentDoc.children.indexOf(doc.id)
+        let lineGeometry = new THREE.Geometry();
+        let line
+
+        doc.mesh = mesh
+        scene.add(mesh);
+        mesh.position.x = x + numberChild * spaceUnit
+        mesh.position.y = y - (spaceUnit)
+
+        lineGeometry.vertices.push(new THREE.Vector3(x, y, z));
+        lineGeometry.vertices.push(new THREE.Vector3(mesh.position.x, mesh.position.y, mesh.position.z))
+
+        line = new THREE.Line(lineGeometry, lineMaterial)
+        scene.add(line)
+    } else {
+        docs[genesisDoc.id].mesh = genesisMesh
+        scene.add(genesisMesh);
     }
 
-    treeData[parentId] = treeData[parentId] ? ++treeData[parentId] : 1
+    doc.children.forEach(childId => drawDat(docs[childId], doc))
+}
 
-    mesh = new THREE.Mesh(geometry, material);
-    doc.mesh = mesh
-    scene.add(mesh);
-    mesh.position.x = (treeData[parentId] - 1) * doubleUnit
-    mesh.position.y = (doubleUnit * parentId) - ((docIds.length * doubleUnit) / 2)
-})
+drawDat(genesisDoc)
 
 function animate() {
     requestAnimationFrame(animate);
 
-    docIds.forEach((id) => {
-        docs[id].mesh.rotation.y += 0.01;
+    Object.keys(docs).forEach((id) => {
+        docs[id].mesh.rotation.y += Math.random() * 0.01;
     })
 
     renderer.render(scene, camera);
