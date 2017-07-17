@@ -1,5 +1,5 @@
 let OrbitControls = require('three-orbit-controls')(THREE)
-let dummyData = require('./dummy-data.json')
+let docs = require('./dummy-data.json')
 
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -7,10 +7,8 @@ let controls = new OrbitControls(camera)
 let renderer = new THREE.WebGLRenderer();
 let geometry = new THREE.BoxGeometry(1, 1, 1);
 let material = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
-let docIds = Object.keys(dummyData)
+let docIds = Object.keys(docs)
 let lights = [];
-let cubes = [];
-let count = 0;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -29,22 +27,21 @@ scene.add(lights[0]);
 scene.add(lights[1]);
 scene.add(lights[2]);
 
-while (count < docIds.length) {
+docIds.forEach((id, index) => {
     let cube = new THREE.Mesh(geometry, material);
 
+    docs[id].mesh = cube
     scene.add(cube);
-    cube.position.z = -1.3 * count
-    cube.position.x = 0.3 * count
-    cube.position.y = 0.3 * count
-    cubes.push(cube);
-    count++;
-}
+    cube.position.z = -1.3 * index
+    cube.position.x = 0.3 * index
+    cube.position.y = 0.3 * index
+})
 
 function animate() {
     requestAnimationFrame(animate);
 
-    cubes.forEach((cube) => {
-        cube.rotation.y += 0.01;
+    docIds.forEach((id) => {
+        docs[id].mesh.rotation.y += 0.01;
     })
 
     renderer.render(scene, camera);
