@@ -4,7 +4,6 @@ let docs = require('./dummy-data.json')
 const unit = 0.05
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-let controls = new OrbitControls(camera)
 let renderer = new THREE.WebGLRenderer();
 let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let geometry = new THREE.OctahedronGeometry(unit)
@@ -17,6 +16,7 @@ let genesisMesh = new THREE.Mesh(geometry, materialTwo);
 let docIds = Object.keys(docs)
 let lights = [];
 let takenPositions = []
+let defaultCameraPositions = { x: 0, y: 0, z: 5 }
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -40,6 +40,23 @@ function isPositionTaken(x, y, z) {
 
     return takenPositions.indexOf(positionString) !== -1
 }
+
+function saveCameraPos() {
+    window.localStorage.setItem('camera-pos', JSON.stringify(camera.position))
+}
+
+function getCameraPos() {
+    return JSON.parse(window.localStorage.getItem('camera-pos'))
+}
+
+function setCameraPos({ x, y, z }) {
+    camera.position.x = x
+    camera.position.y = y
+    camera.position.z = z
+}
+
+setCameraPos(getCameraPos() || defaultCameraPositions)
+let controls = new OrbitControls(camera)
 
 let deltas = [
     [1, 0, 0],
@@ -96,7 +113,7 @@ function illuminateLineage(doc, direction) {
         doc.children.forEach(id => illuminateLineage(docs[id], 'down'))
     }
 
-    if (direction === 'both' || direction === 'up') {
+    if ((direction === 'both' || direction === 'up') && docs[doc.parentId]) {
         illuminateLineage(docs[doc.parentId], 'up')
     }
 }
@@ -154,6 +171,7 @@ function animate() {
         docs[id].mesh.rotation.y += Math.random() * 0.01;
     })
 
+    saveCameraPos()
     renderer.render(scene, camera);
 }
 
