@@ -10,7 +10,7 @@ let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let geometry = new THREE.OctahedronGeometry(unit)
 let materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
 let materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })
-let hoverMaterial = new THREE.MeshLambertMaterial({ color: 0xf4416e })
+let hoverMaterial = new THREE.MeshLambertMaterial({ color: 0x41f4d6 })
 let lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 let genesisDoc = docs[Object.keys(docs).length]
 let genesisMesh = new THREE.Mesh(geometry, materialTwo);
@@ -80,20 +80,38 @@ function calcNewPosition(proposedX, proposedY, proposedZ) {
 function drawLine(parentCoords, childCoords) {
     let lineGeometry = new THREE.Geometry();
     let halfUnit = unit / 2
+    let [px, py, pz] = [parentCoords.x, parentCoords.y - unit, parentCoords.z]
+    let [cx, cy, cz] = [childCoords.x, childCoords.y + unit, childCoords.z]
 
-    lineGeometry.vertices.push(new THREE.Vector3(parentCoords.x, parentCoords.y - unit, parentCoords.z));
-    lineGeometry.vertices.push(new THREE.Vector3(childCoords.x, childCoords.y + unit, childCoords.z))
+    lineGeometry.vertices.push(new THREE.Vector3(px, py, pz));
+    lineGeometry.vertices.push(new THREE.Vector3(cx, cy, cz))
 
     scene.add(new THREE.Line(lineGeometry, lineMaterial))
 }
 
-function attachEventHandlers(mesh) {
-    domEvents.addEventListener(mesh, 'mouseover', (e) => {
+function illuminateLineage(doc, direction) {
+    doc.mesh.material = hoverMaterial
+
+    if (direction === 'both' || direction === 'down') {
+        doc.children.forEach(id => illuminateLineage(docs[id], 'down'))
+    }
+
+    if (direction === 'both' || direction === 'up') {
+        illuminateLineage(docs[doc.parentId], 'up')
+    }
+}
+
+function attachEventHandlers(doc) {
+    domEvents.addEventListener(doc.mesh, 'mouseover', (e) => {
         e.target.material = hoverMaterial
     })
 
-    domEvents.addEventListener(mesh, 'mouseout', (e) => {
+    domEvents.addEventListener(doc.mesh, 'mouseout', (e) => {
         e.target.material = materialOne
+    })
+
+    domEvents.addEventListener(doc.mesh, 'click', (e) => {
+        illuminateLineage(doc, 'both')
     })
 }
 
@@ -118,7 +136,7 @@ function drawDat(doc, parentDoc) {
         mesh.position.y = acceptedY
         mesh.position.z = acceptedZ
 
-        attachEventHandlers(mesh)
+        attachEventHandlers(doc)
 
         drawLine({ x, y, z }, mesh.position)
     } else {
@@ -128,8 +146,6 @@ function drawDat(doc, parentDoc) {
 
     doc.children.forEach(childId => drawDat(docs[childId], doc))
 }
-
-drawDat(genesisDoc)
 
 function animate() {
     requestAnimationFrame(animate);
@@ -141,4 +157,5 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+drawDat(genesisDoc)
 animate();

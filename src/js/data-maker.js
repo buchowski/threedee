@@ -1,8 +1,9 @@
 let fs = require('fs')
 
-function makeDoc(id) {
+function makeDoc(id, parentId) {
     return {
         id,
+        parentId,
         children: [],
     }
 }
@@ -14,7 +15,7 @@ while (numberOfDocs > 0) {
     let ids = Object.keys(docs)
     let randomIndex = Math.floor(Math.random() * ids.length)
     let parentId = ids[randomIndex]
-    let doc = makeDoc(numberOfDocs)
+    let doc = makeDoc(numberOfDocs, parentId)
 
     if (docs[parentId]) {
         docs[parentId].children.push(doc.id)
