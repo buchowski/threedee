@@ -39,13 +39,37 @@ function isPositionTaken(x, y, z) {
     return takenPositions.indexOf(positionString) !== -1
 }
 
+let deltas = [
+    [1, 0, 0],
+    [1, 0, 1],
+    [0, 0, 1],
+    [-1, 0, 1],
+    [-1, 0, 0],
+    [-1, 0, -1],
+    [0, 0, -1],
+    [1, 0, -1],
+]
+
 function calcNewPosition(proposedX, proposedY, proposedZ) {
     let acceptedX = proposedX
     let acceptedY = proposedY
     let acceptedZ = proposedZ
+    let deltaIndex = 0
+    let spaceUnit = unit * 5
+    let specialYDelta = 0
 
-    if (isPositionTaken(proposedX, proposedY, proposedZ)) {
-        acceptedX *= -1
+    while (isPositionTaken(acceptedX, acceptedY, acceptedZ) && deltaIndex < deltas.length) {
+        let [deltaX, deltaY, deltaZ] = deltas[deltaIndex]
+
+        acceptedX += deltaX * spaceUnit
+        acceptedY += (deltaY + specialYDelta) * spaceUnit
+        acceptedZ += deltaZ * spaceUnit
+        deltaIndex++
+
+        if (deltaIndex >= deltas.length) {
+            deltaIndex = 0
+            specialYDelta += -1 * spaceUnit
+        }
     }
 
     return { acceptedX, acceptedY, acceptedZ }
