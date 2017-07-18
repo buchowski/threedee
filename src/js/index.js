@@ -2,6 +2,8 @@ let OrbitControls = require('three-orbit-controls')(THREE)
 let docs = require('./dummy-data.json')
 
 const unit = 0.05
+const spaceUnit = unit * 5
+const lineageColor = 0x41f4d6
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
@@ -9,14 +11,16 @@ let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let geometry = new THREE.OctahedronGeometry(unit)
 let materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
 let materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })
-let hoverMaterial = new THREE.MeshLambertMaterial({ color: 0x41f4d6 })
+let hoverMaterial = new THREE.MeshLambertMaterial({ color: lineageColor })
 let lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+let lineageLineMaterial = new THREE.LineBasicMaterial({ color: lineageColor });
 let genesisDoc = docs[Object.keys(docs).length]
 let genesisMesh = new THREE.Mesh(geometry, materialTwo);
 let docIds = Object.keys(docs)
 let lights = [];
 let takenPositions = []
 let defaultCameraPositions = { x: 0, y: 0, z: 5 }
+let currentLineageIds = []
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -74,20 +78,19 @@ function calcNewPosition(proposedX, proposedY, proposedZ) {
     let acceptedY = proposedY
     let acceptedZ = proposedZ
     let deltaIndex = 0
-    let spaceUnit = unit * 5
     let specialYDelta = 0
 
     while (isPositionTaken(acceptedX, acceptedY, acceptedZ) && deltaIndex < deltas.length) {
         let [deltaX, deltaY, deltaZ] = deltas[deltaIndex]
 
-        acceptedX += deltaX * spaceUnit
-        acceptedY += (deltaY + specialYDelta) * spaceUnit
-        acceptedZ += deltaZ * spaceUnit
+        acceptedX = proposedX + deltaX * spaceUnit
+        acceptedY = proposedY + specialYDelta * spaceUnit
+        acceptedZ = proposedZ + deltaZ * spaceUnit
         deltaIndex++
 
         if (deltaIndex >= deltas.length) {
             deltaIndex = 0
-            specialYDelta += -1 * spaceUnit
+            specialYDelta -= 1
         }
     }
 
@@ -103,11 +106,37 @@ function drawLine(parentCoords, childCoords) {
     lineGeometry.vertices.push(new THREE.Vector3(px, py, pz));
     lineGeometry.vertices.push(new THREE.Vector3(cx, cy, cz))
 
-    scene.add(new THREE.Line(lineGeometry, lineMaterial))
+    let line = new THREE.Line(lineGeometry, lineMaterial)
+
+    scene.add(line)
+
+    return line
+}
+
+function registerLine(line, doc) {
+    doc.lines = doc.lines || []
+    doc.lines.push(line)
+}
+
+function darkenOldLineage(ids) {
+    while (ids.length) {
+        let id = ids.pop()
+        let doc = docs[id]
+
+        doc.mesh.material = materialOne
+        if (doc.lines) {
+            doc.lines.forEach((line) => { line.material = lineMaterial })
+        }
+    }
 }
 
 function illuminateLineage(doc, direction) {
     doc.mesh.material = hoverMaterial
+    currentLineageIds.push(doc.id)
+
+    if (doc.lines) {
+        doc.lines.forEach((line) => { line.material = lineageLineMaterial })
+    }
 
     if (direction === 'both' || direction === 'down') {
         doc.children.forEach(id => illuminateLineage(docs[id], 'down'))
@@ -119,31 +148,27 @@ function illuminateLineage(doc, direction) {
 }
 
 function attachEventHandlers(doc) {
-    domEvents.addEventListener(doc.mesh, 'mouseover', (e) => {
-        e.target.material = hoverMaterial
-    })
+    // domEvents.addEventListener(doc.mesh, 'mouseover', (e) => {
+    //     e.target.material = hoverMaterial
+    // })
 
-    domEvents.addEventListener(doc.mesh, 'mouseout', (e) => {
-        e.target.material = materialOne
-    })
+    // domEvents.addEventListener(doc.mesh, 'mouseout', (e) => {
+    //     e.target.material = materialOne
+    // })
 
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
+        darkenOldLineage(currentLineageIds)
         illuminateLineage(doc, 'both')
     })
 }
 
 function drawDat(doc, parentDoc) {
-    let spaceUnit = unit * 5
-
     if (parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
         let mesh = new THREE.Mesh(geometry, materialOne);
         let numberChild = parentDoc.children.indexOf(doc.id)
-        let proposedX = x + numberChild * spaceUnit
-        let proposedY = y - spaceUnit
-        let proposedZ = 0
+        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(x, y - spaceUnit, z)
         let line
-        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(proposedX, proposedY, proposedZ)
 
         takenPositions.push([acceptedX, acceptedY, acceptedZ].join(','))
         doc.mesh = mesh
@@ -155,7 +180,8 @@ function drawDat(doc, parentDoc) {
 
         attachEventHandlers(doc)
 
-        drawLine({ x, y, z }, mesh.position)
+        line = drawLine({ x, y, z }, mesh.position)
+        registerLine(line, doc)
     } else {
         docs[genesisDoc.id].mesh = genesisMesh
         scene.add(genesisMesh);
