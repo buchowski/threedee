@@ -14,6 +14,7 @@ let genesisDoc = docs[Object.keys(docs).length]
 let genesisMesh = new THREE.Mesh(geometry, materialTwo);
 let docIds = Object.keys(docs)
 let lights = [];
+let takenPositions = []
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -32,6 +33,24 @@ scene.add(lights[0]);
 scene.add(lights[1]);
 scene.add(lights[2]);
 
+function isPositionTaken(x, y, z) {
+    let positionString = [x, y, z].join(',')
+
+    return takenPositions.indexOf(positionString) !== -1
+}
+
+function calcNewPosition(proposedX, proposedY, proposedZ) {
+    let acceptedX = proposedX
+    let acceptedY = proposedY
+    let acceptedZ = proposedZ
+
+    if (isPositionTaken(proposedX, proposedY, proposedZ)) {
+        acceptedX *= -1
+    }
+
+    return { acceptedX, acceptedY, acceptedZ }
+}
+
 function drawDat(doc, parentDoc) {
     let spaceUnit = unit * 5
 
@@ -40,12 +59,19 @@ function drawDat(doc, parentDoc) {
         let mesh = new THREE.Mesh(geometry, materialOne);
         let numberChild = parentDoc.children.indexOf(doc.id)
         let lineGeometry = new THREE.Geometry();
+        let proposedX = x + numberChild * spaceUnit
+        let proposedY = y - spaceUnit
+        let proposedZ = 0
         let line
+        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(proposedX, proposedY, proposedZ)
 
+        takenPositions.push([acceptedX, acceptedY, acceptedZ].join(','))
         doc.mesh = mesh
         scene.add(mesh);
-        mesh.position.x = x + numberChild * spaceUnit
-        mesh.position.y = y - (spaceUnit)
+
+        mesh.position.x = acceptedX
+        mesh.position.y = acceptedY
+        mesh.position.z = acceptedZ
 
         lineGeometry.vertices.push(new THREE.Vector3(x, y, z));
         lineGeometry.vertices.push(new THREE.Vector3(mesh.position.x, mesh.position.y, mesh.position.z))
