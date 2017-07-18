@@ -16,7 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "three": "^0.86.0",
-    "three-orbit-controls": "^82.1.0"
+    "three-orbit-controls": "^82.1.0",
+    "threex.domevents": "^1.0.1"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",

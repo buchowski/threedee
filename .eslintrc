@@ -9,6 +9,7 @@
 		"window": true,
 		"document": true,
 		"THREE": true,
+		"THREEx": true,
 		"requestAnimationFrame": true
 	},
 

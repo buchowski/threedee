@@ -6,9 +6,11 @@ let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let controls = new OrbitControls(camera)
 let renderer = new THREE.WebGLRenderer();
+let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let geometry = new THREE.OctahedronGeometry(unit)
 let materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
 let materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })
+let hoverMaterial = new THREE.MeshLambertMaterial({ color: 0xf4416e })
 let lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 let genesisDoc = docs[Object.keys(docs).length]
 let genesisMesh = new THREE.Mesh(geometry, materialTwo);
@@ -85,6 +87,16 @@ function drawLine(parentCoords, childCoords) {
     scene.add(new THREE.Line(lineGeometry, lineMaterial))
 }
 
+function attachEventHandlers(mesh) {
+    domEvents.addEventListener(mesh, 'mouseover', (e) => {
+        e.target.material = hoverMaterial
+    })
+
+    domEvents.addEventListener(mesh, 'mouseout', (e) => {
+        e.target.material = materialOne
+    })
+}
+
 function drawDat(doc, parentDoc) {
     let spaceUnit = unit * 5
 
@@ -105,6 +117,8 @@ function drawDat(doc, parentDoc) {
         mesh.position.x = acceptedX
         mesh.position.y = acceptedY
         mesh.position.z = acceptedZ
+
+        attachEventHandlers(mesh)
 
         drawLine({ x, y, z }, mesh.position)
     } else {
