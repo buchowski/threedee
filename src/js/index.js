@@ -75,6 +75,16 @@ function calcNewPosition(proposedX, proposedY, proposedZ) {
     return { acceptedX, acceptedY, acceptedZ }
 }
 
+function drawLine(parentCoords, childCoords) {
+    let lineGeometry = new THREE.Geometry();
+    let halfUnit = unit / 2
+
+    lineGeometry.vertices.push(new THREE.Vector3(parentCoords.x, parentCoords.y - unit, parentCoords.z));
+    lineGeometry.vertices.push(new THREE.Vector3(childCoords.x, childCoords.y + unit, childCoords.z))
+
+    scene.add(new THREE.Line(lineGeometry, lineMaterial))
+}
+
 function drawDat(doc, parentDoc) {
     let spaceUnit = unit * 5
 
@@ -82,7 +92,6 @@ function drawDat(doc, parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
         let mesh = new THREE.Mesh(geometry, materialOne);
         let numberChild = parentDoc.children.indexOf(doc.id)
-        let lineGeometry = new THREE.Geometry();
         let proposedX = x + numberChild * spaceUnit
         let proposedY = y - spaceUnit
         let proposedZ = 0
@@ -97,11 +106,7 @@ function drawDat(doc, parentDoc) {
         mesh.position.y = acceptedY
         mesh.position.z = acceptedZ
 
-        lineGeometry.vertices.push(new THREE.Vector3(x, y, z));
-        lineGeometry.vertices.push(new THREE.Vector3(mesh.position.x, mesh.position.y, mesh.position.z))
-
-        line = new THREE.Line(lineGeometry, lineMaterial)
-        scene.add(line)
+        drawLine({ x, y, z }, mesh.position)
     } else {
         docs[genesisDoc.id].mesh = genesisMesh
         scene.add(genesisMesh);
