@@ -5,13 +5,12 @@ import {
 import calcNewPosition from './positioning'
 
 let OrbitControls = require('three-orbit-controls')(THREE)
-let docs = require('./dummy-data.json')
-
+let docs = []
+let genesisDoc
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
 let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
-let genesisDoc = docs[Object.keys(docs).length]
 let defaultCameraPositions = { x: 0, y: 0, z: 5 }
 let currentLineageIds = []
 let controls
@@ -137,8 +136,17 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+function getDummyData() {
+    $.getJSON('/dummy-data')
+        .then((resp) => {
+            docs = resp
+            genesisDoc = docs[Object.keys(docs).length]
+            drawDat(genesisDoc)
+        })
+}
+
+getDummyData()
 setObjPos(camera, getCameraPos() || defaultCameraPositions)
 controls = new OrbitControls(camera)
 addLights()
-drawDat(genesisDoc)
 animate();
