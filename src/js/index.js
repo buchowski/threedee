@@ -1,48 +1,33 @@
+import {
+    unit, spaceUnit, lineageColor, deltas, lightDeltas, geometry,
+    materialOne, materialTwo, hoverMaterial, lineMaterial, lineageLineMaterial
+} from './constants'
+import calcNewPosition from './positioning'
+
 let OrbitControls = require('three-orbit-controls')(THREE)
 let docs = require('./dummy-data.json')
 
-const unit = 0.05
-const spaceUnit = unit * 5
-const lineageColor = 0x41f4d6
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer();
 let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
-let geometry = new THREE.OctahedronGeometry(unit)
-let materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false });
-let materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })
-let hoverMaterial = new THREE.MeshLambertMaterial({ color: lineageColor })
-let lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-let lineageLineMaterial = new THREE.LineBasicMaterial({ color: lineageColor });
 let genesisDoc = docs[Object.keys(docs).length]
-let genesisMesh = new THREE.Mesh(geometry, materialTwo);
-let docIds = Object.keys(docs)
-let lights = [];
-let takenPositions = []
 let defaultCameraPositions = { x: 0, y: 0, z: 5 }
 let currentLineageIds = []
+let controls
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
 document.body.appendChild(renderer.domElement);
-camera.position.z = 5;
 
-lights[0] = new THREE.PointLight(0xffffff, 1, 0);
-lights[1] = new THREE.PointLight(0xffffff, 1, 0);
-lights[2] = new THREE.PointLight(0xffffff, 1, 0);
+function addLights() {
+    [1, 2, 3].forEach((n, i) => {
+        let light = new THREE.PointLight(0xffffff, 1, 0);
+        let [x, y, z] = lightDeltas[i]
 
-lights[0].position.set(0, 200, 0);
-lights[1].position.set(100, 200, 100);
-lights[2].position.set(-100, -200, -100);
-
-scene.add(lights[0]);
-scene.add(lights[1]);
-scene.add(lights[2]);
-
-function isPositionTaken(x, y, z) {
-    let positionString = [x, y, z].join(',')
-
-    return takenPositions.indexOf(positionString) !== -1
+        light.position.set(x, y, z)
+        scene.add(light);
+    })
 }
 
 function saveCameraPos() {
@@ -53,48 +38,10 @@ function getCameraPos() {
     return JSON.parse(window.localStorage.getItem('camera-pos'))
 }
 
-function setCameraPos({ x, y, z }) {
-    camera.position.x = x
-    camera.position.y = y
-    camera.position.z = z
-}
-
-setCameraPos(getCameraPos() || defaultCameraPositions)
-let controls = new OrbitControls(camera)
-
-let deltas = [
-    [1, 0, 0],
-    [1, 0, 1],
-    [0, 0, 1],
-    [-1, 0, 1],
-    [-1, 0, 0],
-    [-1, 0, -1],
-    [0, 0, -1],
-    [1, 0, -1],
-]
-
-function calcNewPosition(proposedX, proposedY, proposedZ) {
-    let acceptedX = proposedX
-    let acceptedY = proposedY
-    let acceptedZ = proposedZ
-    let deltaIndex = 0
-    let specialYDelta = 0
-
-    while (isPositionTaken(acceptedX, acceptedY, acceptedZ) && deltaIndex < deltas.length) {
-        let [deltaX, deltaY, deltaZ] = deltas[deltaIndex]
-
-        acceptedX = proposedX + deltaX * spaceUnit
-        acceptedY = proposedY + specialYDelta * spaceUnit
-        acceptedZ = proposedZ + deltaZ * spaceUnit
-        deltaIndex++
-
-        if (deltaIndex >= deltas.length) {
-            deltaIndex = 0
-            specialYDelta -= 1
-        }
-    }
-
-    return { acceptedX, acceptedY, acceptedZ }
+function setObjPos(obj, { x, y, z }) {
+    obj.position.x = x
+    obj.position.y = y
+    obj.position.z = z
 }
 
 function drawLine(parentCoords, childCoords) {
@@ -148,14 +95,6 @@ function illuminateLineage(doc, direction) {
 }
 
 function attachEventHandlers(doc) {
-    // domEvents.addEventListener(doc.mesh, 'mouseover', (e) => {
-    //     e.target.material = hoverMaterial
-    // })
-
-    // domEvents.addEventListener(doc.mesh, 'mouseout', (e) => {
-    //     e.target.material = materialOne
-    // })
-
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
         darkenOldLineage(currentLineageIds)
         illuminateLineage(doc, 'both')
@@ -163,28 +102,25 @@ function attachEventHandlers(doc) {
 }
 
 function drawDat(doc, parentDoc) {
+    let mesh = new THREE.Mesh(geometry, materialOne);
+
     if (parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
-        let mesh = new THREE.Mesh(geometry, materialOne);
         let numberChild = parentDoc.children.indexOf(doc.id)
         let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(x, y - spaceUnit, z)
         let line
 
-        takenPositions.push([acceptedX, acceptedY, acceptedZ].join(','))
         doc.mesh = mesh
         scene.add(mesh);
 
-        mesh.position.x = acceptedX
-        mesh.position.y = acceptedY
-        mesh.position.z = acceptedZ
-
+        setObjPos(mesh, { x: acceptedX, y: acceptedY, z: acceptedZ })
         attachEventHandlers(doc)
 
         line = drawLine({ x, y, z }, mesh.position)
         registerLine(line, doc)
     } else {
-        docs[genesisDoc.id].mesh = genesisMesh
-        scene.add(genesisMesh);
+        doc.mesh = mesh
+        scene.add(mesh);
     }
 
     doc.children.forEach(childId => drawDat(docs[childId], doc))
@@ -201,5 +137,8 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+setObjPos(camera, getCameraPos() || defaultCameraPositions)
+controls = new OrbitControls(camera)
+addLights()
 drawDat(genesisDoc)
 animate();

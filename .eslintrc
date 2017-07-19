@@ -22,6 +22,7 @@
 		"no-plusplus": 0,
 		"semi": 0,
 		"no-unused-vars": 0,
-		"no-mixed-operators": 0
+		"no-mixed-operators": 0,
+		"comma-dangle": 0
 	}
 }
