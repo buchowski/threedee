@@ -37,7 +37,7 @@ function calcBlobPosition(proposedX, proposedY, proposedZ) {
 
 
 
-function calcBlobPositionAlt(proposedX, proposedY, proposedZ, siblingId, siblingCount) {
+function calcBlobPositionCircle(proposedX, proposedY, proposedZ, siblingId, siblingCount) {
     let acceptedX = proposedX + spaceUnit * Math.cos(2 * Math.PI * siblingId / siblingCount)
     let acceptedY = proposedY
     let acceptedZ = proposedZ + spaceUnit * Math.sin(2 * Math.PI * siblingId / siblingCount)
@@ -46,4 +46,4 @@ function calcBlobPositionAlt(proposedX, proposedY, proposedZ, siblingId, sibling
 
 
 // simply export a different function when you want a different positioning algorithm
-export default calcBlobPositionAlt
+export default calcBlobPositionCircle
