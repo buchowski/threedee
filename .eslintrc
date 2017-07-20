@@ -10,7 +10,8 @@
 		"document": true,
 		"THREE": true,
 		"THREEx": true,
-		"requestAnimationFrame": true
+		"requestAnimationFrame": true,
+		"$": true
 	},
 
 	"rules": {

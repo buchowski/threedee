@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "watchify src/js/index.js -o dist/bundle.js -t [ babelify --presets [ es2015 ] ] && livereload dist/bundle.js"
+    "build": "npm run cp-html & npm run cp-js & npm run build-client & npm run server",
+    "build-client": "watchify src/js/client/index.js -o dist/bundle.js -t [ babelify --presets [ es2015 ] ] & livereload dist/bundle.js",
+    "server": "nodemon src/js/server/index.js",
+    "cp-html": "mkdir dist & cp index.html dist/",
+    "cp-js": "cp node_modules/three/build/three.js dist & cp node_modules/threex.domevents/threex.domevents.js dist & cp node_modules/jquery/dist/jquery.min.js dist"
   },
   "keywords": [
     "3d",
@@ -15,6 +19,8 @@
   "author": "buchowski",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.15.3",
+    "jquery": "^3.2.1",
     "three": "^0.86.0",
     "three-orbit-controls": "^82.1.0",
     "threex.domevents": "^1.0.1"
