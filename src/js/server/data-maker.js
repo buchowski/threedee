@@ -8,7 +8,7 @@ function makeDoc(id, parentId) {
     }
 }
 
-let numberOfDocs = process.env.NUMBER_OF_DOCS || 200
+let numberOfDocs = process.env.NUMBER_OF_DOCS || 2000
 const docs = {}
 
 while (numberOfDocs > 0) {
