@@ -107,7 +107,7 @@ function drawDat(doc, parentDoc) {
     if (parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
         let numberChild = parentDoc.children.indexOf(doc.id)
-        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(x, y - spaceUnit, z)
+        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(x, y - spaceUnit, z, numberChild,  parentDoc.children.length)
         let line
 
         doc.mesh = mesh
