@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run cp-html & npm run cp-js & npm run build-client & npm run server",
-    "build-client": "watchify src/js/client/index.js -o dist/bundle.js -t [ babelify --presets [ es2015 ] ] & livereload dist/bundle.js",
-    "server": "nodemon src/js/server/index.js",
+    "build-client": "watchify src/js/client/index.js -o dist/bundle.js -t [ babelify --presets [ es2015 ] ] && livereload dist/bundle.js",
+    "server": "node src/js/server/index.js",
     "cp-html": "mkdir dist & cp index.html dist/",
     "cp-js": "cp node_modules/three/build/three.js dist & cp node_modules/threex.domevents/threex.domevents.js dist & cp node_modules/jquery/dist/jquery.min.js dist"
   },
