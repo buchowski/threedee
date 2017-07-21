@@ -7,26 +7,33 @@
     <script src="./jquery.min.js"></script>
     <script src="./underscore-min.js"></script>
     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
+    <link rel="stylesheet" href="./vendor/bootstrap.css">
     <style>
         body { margin: 0; }
         #panel {
-        	position: fixed;
-        	width: 200px;
-        	height: 400px;
-        	background-color: white;
-        	border-radius: 6px;
-        	top: 12px;
-        	left: 12px;
-        	opacity: 0.8;
+            position: fixed;
+            width: 200px;
+            height: 400px;
+            background-color: white;
+            border-radius: 6px;
+            top: 12px;
+            left: 12px;
+            opacity: 0.8;
+            transition: height 1s ease-out;
+            overflow: hidden;
+        }
+        #panel.collapsed {
+            height: 20px;
+        }
+        .glyphicon-sunglasses {
+            float: right;
+            margin-right: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-	<div id="panel">
-		<div id="filename"></div>
-		<div id="created"></div>
-
-	</div>
+    <div id="panel"></div>
     <input type="file" style="display:none;">
     <script src="./bundle.js"></script>
 </body>

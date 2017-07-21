@@ -9,7 +9,8 @@
     "build-client": "watchify src/js/client/index.js -o dist/bundle.js -t [ babelify --presets [ es2015 ] ] & livereload dist/bundle.js",
     "server": "node src/js/server/index.js",
     "cp-html": "mkdir dist & cp index.html dist/",
-    "cp-js": "cp node_modules/underscore/underscore-min.js dist & cp node_modules/three/build/three.js dist & cp node_modules/threex.domevents/threex.domevents.js dist & cp node_modules/jquery/dist/jquery.min.js dist"
+    "cp-js": "cp node_modules/underscore/underscore-min.js dist & cp node_modules/three/build/three.js dist & cp node_modules/threex.domevents/threex.domevents.js dist & cp node_modules/jquery/dist/jquery.min.js dist",
+    "cp-css": "cp -r node_modules/components-bootstrap/fonts dist & mkdir -p dist/vendor && cp node_modules/components-bootstrap/css/bootstrap.css dist/vendor/"
   },
   "keywords": [
     "3d",
@@ -19,6 +20,7 @@
   "author": "buchowski",
   "license": "ISC",
   "dependencies": {
+    "components-bootstrap": "^3.3.7",
     "express": "^4.15.3",
     "jquery": "^3.2.1",
     "three": "^0.86.0",

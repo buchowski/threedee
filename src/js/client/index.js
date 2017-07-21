@@ -128,7 +128,15 @@ function illuminateLineage(doc, direction) {
     }
 }
 
-let panelTemplate = _.template('<h1>hello</h1><%= id %>')
+let panelTemplate = _.template(`
+    <div class="glyphicon glyphicon-sunglasses"></div>
+    <h1>hello</h1>
+    <%= id %>
+`)
+
+let $panel = $('#panel')
+$panel.html(panelTemplate({ id: 200 }))
+let $collapseIcon = $('.glyphicon-sunglasses')
 
 function attachEventHandlers(doc) {
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
@@ -136,7 +144,12 @@ function attachEventHandlers(doc) {
         // darkenOldLineage(currentLineageIds)
         // illuminateLineage(doc, 'both')
     })
+
+    $collapseIcon.click((e) => {
+        $panel.toggleClass('collapsed')
+    })
 }
+
 
 function drawDat(doc, parentDoc) {
     let mesh = new THREE.Mesh(geometry, materialOne);
