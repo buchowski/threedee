@@ -218,6 +218,8 @@ function animate() {
     //     animatePosition(newPositions.pop())
     // }
 
+    Object.keys(docs).forEach((id) => { docs[id].mesh.rotation.y += Math.random() * 0.009 })
+
     saveCameraPos()
     renderer.render(scene, camera);
 }
