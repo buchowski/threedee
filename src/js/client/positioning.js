@@ -10,7 +10,11 @@ function isPositionTaken(x, y, z) {
     return takenPositions.indexOf(positionString) !== -1
 }
 
-function calcBlobPosition(proposedX, proposedY, proposedZ) {
+export function resetTakenPositions() {
+    takenPositions = []
+}
+
+export function calcBlobPosition(proposedX, proposedY, proposedZ) {
     let acceptedX = proposedX
     let acceptedY = proposedY
     let acceptedZ = proposedZ
@@ -35,15 +39,12 @@ function calcBlobPosition(proposedX, proposedY, proposedZ) {
     return { acceptedX, acceptedY, acceptedZ }
 }
 
-
-
-function calcBlobPositionCircle(proposedX, proposedY, proposedZ, siblingId, siblingCount) {
+export function calcBlobPositionCircle(proposedX, proposedY, proposedZ, siblingId, siblingCount) {
     let acceptedX = proposedX + spaceUnit * Math.cos(2 * Math.PI * siblingId / siblingCount)
     let acceptedY = proposedY
     let acceptedZ = proposedZ + spaceUnit * Math.sin(2 * Math.PI * siblingId / siblingCount)
     return { acceptedX, acceptedY, acceptedZ }
 }
-
 
 // simply export a different function when you want a different positioning algorithm
 export default calcBlobPositionCircle

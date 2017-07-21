@@ -1,6 +1,6 @@
 const unit = 0.05
 const spaceUnit = unit * 5
-const lineageColor = 0x41f4d6
+const lineageColor = 0xf44152
 const geometry = new THREE.OctahedronGeometry(unit)
 const materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false })
 const materialTwo = new THREE.MeshLambertMaterial({ color: 0xf4416e, wireframe: false })

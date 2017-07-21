@@ -2,9 +2,10 @@ import {
     unit, spaceUnit, lineageColor, deltas, lightDeltas, geometry,
     materialOne, materialTwo, hoverMaterial, lineMaterial, lineageLineMaterial
 } from './constants'
-import calcNewPosition from './positioning'
+import { calcBlobPosition, calcBlobPositionCircle, resetTakenPositions } from './positioning'
 
 let OrbitControls = require('three-orbit-controls')(THREE)
+
 let docs = []
 let genesisDoc
 let scene = new THREE.Scene();
@@ -14,6 +15,7 @@ let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let defaultCameraPositions = { x: 0, y: 0, z: 5 }
 let currentLineageIds = []
 let controls
+let newPositions = []
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0xefd1b5)
@@ -41,6 +43,39 @@ function setObjPos(obj, { x, y, z }) {
     obj.position.x = x
     obj.position.y = y
     obj.position.z = z
+}
+
+function updateCoord(currentCoord, destinationCoord, step) {
+    let newCoord
+
+    if (currentCoord < destinationCoord) {
+        newCoord = currentCoord + step
+
+        return (newCoord > destinationCoord) ? destinationCoord : newCoord
+    } else if (currentCoord > destinationCoord) {
+        newCoord = currentCoord - step
+
+        return (newCoord < destinationCoord) ? destinationCoord : newCoord
+    }
+
+    return currentCoord
+}
+
+function animatePosition(data) {
+    let mesh = data.mesh
+    let { x, y, z } = data.newPositions
+    let step = 0.04
+    let count = 100
+
+    // while (x !== mesh.position.x || y !== mesh.position.y || z !== mesh.position.z) {
+    while (count > 0) {
+        x = updateCoord(mesh.position.x, x, step)
+        y = updateCoord(mesh.position.y, y, step)
+        z = updateCoord(mesh.position.z, z, step)
+
+        setObjPos(mesh, { x, y, z })
+        count--
+    }
 }
 
 function drawLine(parentCoords, childCoords) {
@@ -106,7 +141,7 @@ function drawDat(doc, parentDoc) {
     if (parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
         let numberChild = parentDoc.children.indexOf(doc.id)
-        let { acceptedX, acceptedY, acceptedZ } = calcNewPosition(x, y - spaceUnit, z, numberChild,  parentDoc.children.length)
+        let { acceptedX, acceptedY, acceptedZ } = calcBlobPositionCircle(x, y - spaceUnit, z, numberChild, parentDoc.children.length)
         let line
 
         doc.mesh = mesh
@@ -119,18 +154,53 @@ function drawDat(doc, parentDoc) {
         registerLine(line, doc)
     } else {
         doc.mesh = mesh
+        mesh.material = hoverMaterial
         scene.add(mesh);
     }
 
     doc.children.forEach(childId => drawDat(docs[childId], doc))
 }
 
+function getNewPositions(doc, parentDoc) {
+    let positions = []
+    let acceptedPositions = { acceptedX: 0, acceptedY: 0, acceptedZ: 0 }
+    let positionData
+
+    if (parentDoc) {
+        let { x, y, z } = parentDoc.mesh.position
+        let numberChild = parentDoc.children.indexOf(doc.id)
+
+        acceptedPositions = calcBlobPosition(x, y - spaceUnit, z, numberChild, parentDoc.children.length)
+    }
+
+    doc.children.forEach((childId) => {
+        positions = positions.concat(getNewPositions(docs[childId], doc))
+    })
+
+    positionData = {
+        mesh: doc.mesh,
+        newPositions: {
+            x: acceptedPositions.acceptedX,
+            y: acceptedPositions.acceptedY,
+            z: acceptedPositions.acceptedZ
+        }
+    }
+    positions.push(positionData)
+
+    return positions
+}
+
+// setTimeout(() => {
+//     resetTakenPositions()
+//     newPositions = getNewPositions(genesisDoc)
+// }, 1000)
+
 function animate() {
     requestAnimationFrame(animate);
 
-    Object.keys(docs).forEach((id) => {
-        docs[id].mesh.rotation.y += Math.random() * 0.01;
-    })
+    // while (newPositions.length) {
+    //     animatePosition(newPositions.pop())
+    // }
 
     saveCameraPos()
     renderer.render(scene, camera);
