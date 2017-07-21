@@ -128,10 +128,13 @@ function illuminateLineage(doc, direction) {
     }
 }
 
+let panelTemplate = _.template('<h1>hello</h1><%= id %>')
+
 function attachEventHandlers(doc) {
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
-        darkenOldLineage(currentLineageIds)
-        illuminateLineage(doc, 'both')
+        document.querySelector('#panel').innerHTML = panelTemplate({ id: doc.id })
+        // darkenOldLineage(currentLineageIds)
+        // illuminateLineage(doc, 'both')
     })
 }
 
@@ -220,3 +223,20 @@ setObjPos(camera, getCameraPos() || defaultCameraPositions)
 controls = new OrbitControls(camera)
 addLights()
 animate();
+
+let input = document.querySelector('input')
+function uploadHandler() {
+    let file = this.files[0]
+    let filenameSansPrefix = file.name.split('.')[0]
+
+    docs[filenameSansPrefix].mesh.material = hoverMaterial
+}
+
+window.addEventListener('keypress', (e) => {
+    if (e.key === 'u') {
+        input.click()
+    }
+})
+
+input.addEventListener('change', uploadHandler)
+

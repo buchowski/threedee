@@ -5,12 +5,29 @@
     <script src="./three.js"></script>
     <script src="./threex.domevents.js"></script>
     <script src="./jquery.min.js"></script>
+    <script src="./underscore-min.js"></script>
     <script src="http://localhost:35729/livereload.js?snipver=1"></script>
     <style>
         body { margin: 0; }
+        #panel {
+        	position: fixed;
+        	width: 200px;
+        	height: 400px;
+        	background-color: white;
+        	border-radius: 6px;
+        	top: 12px;
+        	left: 12px;
+        	opacity: 0.8;
+        }
     </style>
 </head>
 <body>
+	<div id="panel">
+		<div id="filename"></div>
+		<div id="created"></div>
+
+	</div>
+    <input type="file" style="display:none;">
     <script src="./bundle.js"></script>
 </body>
 </html>
