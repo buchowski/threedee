@@ -2,6 +2,8 @@ const unit = 0.05
 const spaceUnit = unit * 5
 const lineageColor = 0xf44152
 const geometry = new THREE.OctahedronGeometry(unit)
+const torusGeometry = new THREE.TorusKnotGeometry(unit, unit / 3)
+const sphereGeometry = new THREE.SphereGeometry(unit)
 const materialOne = new THREE.MeshLambertMaterial({ color: 0x2194ce, wireframe: false })
 const materialTwo = new THREE.MeshLambertMaterial({ color: 0x09f21d, wireframe: false })
 const hoverMaterial = new THREE.MeshLambertMaterial({ color: lineageColor })
@@ -34,5 +36,7 @@ export {
     lineMaterial,
     lineageLineMaterial,
     deltas,
-    lightDeltas
+    lightDeltas,
+    torusGeometry,
+    sphereGeometry
 }

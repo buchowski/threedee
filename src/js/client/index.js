@@ -1,5 +1,5 @@
 import {
-    unit, spaceUnit, lineageColor, deltas, lightDeltas, geometry,
+    unit, spaceUnit, lineageColor, deltas, lightDeltas, geometry, torusGeometry, sphereGeometry,
     materialOne, materialTwo, hoverMaterial, lineMaterial, lineageLineMaterial
 } from './constants'
 import { calcBlobPosition, calcBlobPositionCircle, resetTakenPositions } from './positioning'
@@ -275,9 +275,28 @@ function uploadHandler() {
     selectDoc(doc)
 }
 
+function swapGeometry(flag) {
+    Object.keys(docs).forEach((id) => {
+        docs[id].mesh.geometry.dispose()
+        if (flag === 'torus') {
+            docs[id].mesh.geometry = torusGeometry.clone()
+        } else if (flag === 'sphere') {
+            docs[id].mesh.geometry = sphereGeometry.clone()
+        } else if (flag === 'oct') {
+            docs[id].mesh.geometry = geometry.clone()
+        }
+    })
+}
+
 window.addEventListener('keypress', (e) => {
     if (e.key === 'u') {
         input.click()
+    } else if (e.key === 'a') {
+        swapGeometry('sphere')
+    } else if (e.key === 's') {
+        swapGeometry('torus')
+    } else if (e.key === 'd') {
+        swapGeometry('oct')
     }
 })
 
