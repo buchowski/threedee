@@ -112,8 +112,9 @@ function darkenOldLineage(ids) {
 }
 
 function illuminateLineage(doc, direction) {
-    doc.mesh.material = hoverMaterial
     currentLineageIds.push(doc.id)
+
+    doc.mesh.material = (direction === 'both') ? materialTwo : hoverMaterial
 
     if (doc.lines) {
         doc.lines.forEach((line) => { line.material = lineageLineMaterial })
@@ -155,14 +156,18 @@ function updatePanel(doc) {
     document.querySelector('#panel').innerHTML = panelTemplate({ doc: updatedDoc })
 }
 
+function selectDoc(doc) {
+    updatePanel(doc)
+    darkenOldLineage(currentLineageIds)
+    illuminateLineage(doc, 'both')
+}
+
 let $panel = $('#panel')
 let $collapseIcon = $('.glyphicon-sunglasses')
 
 function attachEventHandlers(doc) {
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
-        updatePanel(doc)
-        // darkenOldLineage(currentLineageIds)
-        // illuminateLineage(doc, 'both')
+        selectDoc(doc)
     })
 
     $collapseIcon.click((e) => {
@@ -177,7 +182,7 @@ function drawDat(doc, parentDoc) {
     if (parentDoc) {
         let { x, y, z } = parentDoc.mesh.position
         let numberChild = parentDoc.children.indexOf(doc.id)
-        let { acceptedX, acceptedY, acceptedZ } = calcBlobPositionCircle(x, y - spaceUnit, z, numberChild, parentDoc.children.length)
+        let { acceptedX, acceptedY, acceptedZ } = calcBlobPosition(x, y - spaceUnit, z, numberChild, parentDoc.children.length)
         let line
 
         doc.mesh = mesh
@@ -190,7 +195,6 @@ function drawDat(doc, parentDoc) {
         registerLine(line, doc)
     } else {
         doc.mesh = mesh
-        mesh.material = hoverMaterial
         scene.add(mesh);
     }
 
@@ -250,7 +254,9 @@ function getDummyData() {
             docs = resp
             genesisDoc = docs[Object.keys(docs).length]
             drawDat(genesisDoc)
-            updatePanel(genesisDoc)
+
+            // fake it till you make it
+            selectDoc(docs[38])
         })
 }
 
@@ -264,8 +270,9 @@ let input = document.querySelector('input')
 function uploadHandler() {
     let file = this.files[0]
     let filenameSansPrefix = file.name.split('.')[0]
+    let doc = docs[filenameSansPrefix]
 
-    docs[filenameSansPrefix].mesh.material = hoverMaterial
+    selectDoc(doc)
 }
 
 window.addEventListener('keypress', (e) => {
