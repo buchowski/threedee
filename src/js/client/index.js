@@ -130,17 +130,37 @@ function illuminateLineage(doc, direction) {
 
 let panelTemplate = _.template(`
     <div class="glyphicon glyphicon-sunglasses"></div>
-    <h1>hello</h1>
-    <%= id %>
+    <h1>plan_for_the_big_game.pdf</h1>
+    <div>ID: <%= doc.id %></div>
+    <div>Parent ID: <%= doc.parentId %></div>
+    <div class="avatar <%= doc.avatarClass %>"></div>
+    <div>Edited by <%= doc.author.name %></div>
+    <div>Saved on <%= new Date(doc.timestamp).toString() %></div>
 `)
 
+function getAvatarClass(author) {
+    if (/steve/i.test(author.name)) {
+        return 'steve'
+    } else if (/bob/i.test(author.name)) {
+        return 'bobby'
+    }
+
+    return 'brian'
+}
+
+function updatePanel(doc) {
+    let parentId = doc.parentId ? doc.parentId : 'N/A (genesis doc)'
+    let avatarClass = getAvatarClass(doc.author)
+    let updatedDoc = Object.assign(doc, { avatarClass, parentId })
+    document.querySelector('#panel').innerHTML = panelTemplate({ doc: updatedDoc })
+}
+
 let $panel = $('#panel')
-$panel.html(panelTemplate({ id: 200 }))
 let $collapseIcon = $('.glyphicon-sunglasses')
 
 function attachEventHandlers(doc) {
     domEvents.addEventListener(doc.mesh, 'click', (e) => {
-        document.querySelector('#panel').innerHTML = panelTemplate({ id: doc.id })
+        updatePanel(doc)
         // darkenOldLineage(currentLineageIds)
         // illuminateLineage(doc, 'both')
     })
@@ -230,6 +250,7 @@ function getDummyData() {
             docs = resp
             genesisDoc = docs[Object.keys(docs).length]
             drawDat(genesisDoc)
+            updatePanel(genesisDoc)
         })
 }
 
