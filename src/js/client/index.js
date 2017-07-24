@@ -9,7 +9,8 @@ let OrbitControls = require('three-orbit-controls')(THREE)
 let docs = []
 let genesisDoc
 let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+scene.fog = new THREE.FogExp2(0x555263, 0.6)
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 let renderer = new THREE.WebGLRenderer();
 let domEvents = new THREEx.DomEvents(camera, renderer.domElement)
 let defaultCameraPositions = { x: 0, y: 0, z: 5 }
@@ -109,6 +110,16 @@ function darkenOldLineage(ids) {
             doc.lines.forEach((line) => { line.material = lineMaterial })
         }
     }
+}
+
+function toggleNonLineageOpacity(isFade) {
+    Object.keys(docs).forEach((id) => {
+        if (currentLineageIds.indexOf(Number(id)) === -1) {
+            let doc = docs[id]
+
+            doc.mesh.material.opacity = isFade ? 0.4 : 1.0
+        }
+    })
 }
 
 function illuminateLineage(doc, direction) {
@@ -288,9 +299,14 @@ function swapGeometry(flag) {
     })
 }
 
+let isFade = false
+
 window.addEventListener('keypress', (e) => {
     if (e.key === 'u') {
         input.click()
+    } else if (e.key === 'o') {
+        isFade = !isFade
+        toggleNonLineageOpacity(isFade)
     } else if (e.key === 'a') {
         swapGeometry('sphere')
     } else if (e.key === 's') {
